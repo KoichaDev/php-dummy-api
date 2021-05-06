@@ -33,7 +33,7 @@ class Post {
                   FROM ' . $this->table . ' post
                        LEFT JOIN categories category ON post.category_id = category.id
                   ORDER BY
-                    post.created_at DESC';
+                    post.created_at ASC';
         // Prepare statements
         $stmt = $this->connection->prepare($query);
 
@@ -79,5 +79,39 @@ class Post {
         $this->category_name = $row['category_name'];
 
         return $stmt;
+    }
+
+    // Create Post
+
+    public function create() {
+        // Create query for inserting 
+        // :title is name parameter for PDO for inserting stuff into DB
+        $query = 'INSERT INTO ' . $this->table . ' SET title = :title, body = :body, author = :author, category_id = :category_id';
+
+
+        // Prepare statement
+        $stmt = $this->connection->prepare($query);
+
+        // Sanitize data input
+        $this->title = htmlspecialchars(strip_tags($this->title));
+        $this->body = htmlspecialchars(strip_tags($this->body));
+        $this->author = htmlspecialchars(strip_tags($this->author));
+        $this->category_id = htmlspecialchars(strip_tags($this->category_id));
+
+        // Bind the data from the :title, :body, :author, :category_id
+        $stmt->bindparam(':title', $this->title);
+        $stmt->bindparam(':body', $this->body);
+        $stmt->bindparam(':author', $this->author);
+        $stmt->bindparam(':category_id', $this->category_id);
+
+        // Execute our query
+        if ($stmt->execute()) {
+            return true;
+        }
+
+        // Print if something goes wrong
+        printf("Error: %s.\n", $stmt->error);
+
+        return false;
     }
 }
